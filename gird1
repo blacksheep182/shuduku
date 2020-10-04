@@ -1,0 +1,542 @@
+#include "grid.h"
+#include <QPainter>
+#include <QPen>
+#include <QDebug>
+#include <vector>
+#include <QTime>
+#include <iostream>
+#include <QMouseEvent>
+#include <QBrush>
+#include <QPushButton>
+#include <QTimer>
+
+int gridy;
+int gridx;
+int level=0;
+int logol=0;
+int lastlogol=0;
+int searchnum=0;
+int lastnum=0;
+int lasti=0;
+int lastj=0;
+int open=0;
+int sec=0;
+
+
+void grid::change_num(int n1,int n2)
+{
+    for(int i=0;i<9;i++)
+    {
+        for(int j=0;j<9;j++)
+        {
+            if(array[i][j]==n1)
+            {
+                array[i][j]=n2;
+                continue;
+            }
+            if(array[i][j]==n2)
+            {
+                array[i][j]=n1;
+            }
+        }
+    }
+}
+
+
+void grid::change_row(int n1, int n2)
+{
+    swap(array[n1],array[n2]);
+}
+
+
+void grid::change_column(int n1, int n2)
+{
+    for(int i=0;i<9;i++)
+    {
+        swap(array[i][n1],array[i][n2]);
+    }
+}
+
+
+void grid::change_threerow(int n1, int n2)
+{
+    for(int i=0;i<3;i++)
+    {
+        swap(array[n1*3+i],array[n2*3+i]);
+    }
+}
+
+
+void grid::change_threecolumn(int n1, int n2)
+{
+    for(int j=0;j<9;j++)
+    for(int i=0;i<3;i++)
+    {
+        swap(array[j][n1*3+i],array[j][n2*3+i]);
+    }
+}
+
+
+void grid::makeblank(int level)
+{
+    int num=0;
+    switch(level)
+    {
+        case 0 : num=61;break;
+        case 1 : num=46;break;
+        case 2 : num=31;break;
+        default : break;
+    }
+    QTime time= QTime::currentTime();
+    qsrand(time.msec()+time.second()*1000);
+    int n,m,count=0;
+    for(count=0;count<num;count++)
+    {
+        m=qrand()%9;
+        n=qrand()%9;
+        if(blank[n][m]==0)
+        {
+            blank[n][m]=1;
+        }
+        else
+        {
+            count--;
+        }
+    }
+    for(int i=0;i<9;i++)
+    {
+        for(int j=0;j<9;j++)
+        {
+            if(blank[i][j]==1)
+            {
+                issus[i][j]=int(array[i][j]);
+            }
+        }
+    }
+    qDebug()<<count<<num;
+}
+
+
+void grid::createshudu1()
+{
+    array={{1,2,3,4,5,6,7,8,9},
+           {4,5,6,7,8,9,1,2,3},
+           {7,8,9,1,2,3,4,5,6},
+           {2,3,4,5,6,7,8,9,1},
+           {5,6,7,8,9,1,2,3,4},
+           {8,9,1,2,3,4,5,6,7},
+           {3,4,5,6,7,8,9,1,2},
+           {6,7,8,9,1,2,3,4,5},
+           {9,1,2,3,4,5,6,7,8}};
+    int i=0;
+    QTime time= QTime::currentTime();
+    qsrand(time.msec()+time.second()*1000);
+    int n,m,l;
+    //交换数字
+    for(i=0;i<20;i++)
+    {
+        n=qrand()%9+1;
+        m=qrand()%9+1;
+        if(n!=m)
+        {
+            change_num(n,m);
+        }
+        else
+        {
+            i--;
+        }
+    }
+    //在三行之内交换行
+    for(i=0;i<20;i++)
+    {
+        n=qrand()%3;
+        m=qrand()%3;
+        l=qrand()%3;
+        if(n!=m)
+        {
+            change_row(3*l+n,3*l+m);
+        }
+        else
+        {
+            i--;
+        }
+    }
+    //三行之内交换列
+    for(i=0;i<20;i++)
+    {
+        n=qrand()%3;
+        m=qrand()%3;
+        l=qrand()%3;
+        if(n!=m)
+        {
+            change_column(3*l+n,3*l+m);
+        }
+        else
+        {
+            i--;
+        }
+    }
+    //三行三行交换
+    for(i=0;i<10;i++)
+    {
+        m=qrand()%3;
+        n=qrand()%3;
+        if(n!=m)
+        {
+            change_threerow(n,m);
+        }
+        else
+        {
+            i--;
+        }
+    }
+    //三列三列交换
+    for(i=0;i<10;i++)
+    {
+        m=qrand()%3;
+        n=qrand()%3;
+        if(n!=m)
+        {
+            change_threecolumn(n,m);
+        }
+        else
+        {
+            i--;
+        }
+    }
+    makeblank(level);
+    for(i=0;i<9;i++)
+    {
+        for(int j=0;j<9;j++)
+        {
+            cout<<array[i][j]<<" ";
+        }
+        cout<<endl;
+    }
+    cout<<endl;
+    int aa=0;
+    for(i=0;i<9;i++)
+    {
+        for(int j=0;j<9;j++)
+        {
+            cout<<blank[i][j]<<" ";
+        }
+        cout<<endl;
+    }
+    cout<<endl;
+    for(i=0;i<9;i++)
+    {
+        for(int j=0;j<9;j++)
+        {
+            if(issus[i][j]==0) aa++;
+            cout<<issus[i][j]<<" ";
+
+        }
+        cout<<endl;
+    }
+    qDebug()<<"aa"<<aa;
+}
+
+
+void grid::paintEvent(QPaintEvent *)
+{
+
+    //绘制九宫格
+    QPainter p(this);
+    QPen pen;
+    pen.setWidth(1);
+    p.setPen(pen);
+    gridx=width()/13;
+    gridy=height()/11;
+
+    hint.resize(gridx,gridy*3/5);
+    time.resize(gridx,gridy*3/5);
+    hint.move(gridx,gridy/5);
+    time.move(0,10*gridy+gridy/5);
+    restart.resize(gridx,gridy*3/5);
+    restart.move(0,gridy/5);
+    another.resize(gridx,gridy*3/5);
+    another.move(0,gridy+gridy/5);
+
+    //画行（细线）
+    for(int i=0;i<10;i++)
+    {
+        p.drawLine(gridx,gridy+i*gridy,10*gridx,gridy+i*gridy);
+    }
+
+    //列（细线）
+    for(int i=0;i<12;i++)
+    {
+        p.drawLine(gridx+i*gridx,gridy,gridx+i*gridx,10*gridy);
+    }
+    pen.setWidth(4);
+    p.setPen(pen);
+
+    //画行（粗线）
+    for(int i=0;i<4;i++)
+    {
+        p.drawLine(gridx,gridy+3*i*gridy,10*gridx,gridy+3*i*gridy);
+        p.drawLine(11*gridx,gridy+i*gridy,12*gridx,gridy+i*gridy);
+    }
+
+    //列（粗线）
+    for(int i=0;i<4;i++)
+    {
+        p.drawLine(gridx+3*i*gridx,gridy,gridx+3*i*gridx,10*gridy);
+    }
+
+    //侧边数字框
+    for(int i=0;i<10;i++)
+    {
+        p.drawLine(11*gridx,gridy+i*gridy,12*gridx,gridy+i*gridy);
+    }
+    p.drawLine(11*gridx,gridy,11*gridx,10*gridy);
+    p.drawLine(12*gridx,gridy,12*gridx,10*gridy);
+
+    //网格颜色区分已知与未知
+    QString number=0;
+    QBrush brush;
+    brush.setColor(Qt::gray);
+    brush.setStyle(Qt::Dense2Pattern);
+    p.setBrush(brush);
+    pen.setWidth(2);
+    p.setPen(pen);
+    for(int i=0;i<9;i++)
+    {
+        for(int j=0;j<9;j++)
+        {
+            if(blank[i][j]==1)
+            {
+                p.drawRect((j+1)*gridx,(i+1)*gridy,gridx,gridy);
+            }
+        }
+    }
+
+    //标记当前选中的数字
+    brush.setColor(Qt::blue);
+    brush.setStyle(Qt::Dense2Pattern);
+    p.setBrush(brush);
+    if(searchnum>0&&searchnum<10)
+    {
+        for(int i=0;i<9;i++)
+        {
+            for(int j=0;j<9;j++)
+            {
+                if(issus[i][j]==searchnum)
+                {
+                    p.drawRect((j+1)*gridx,(i+1)*gridy,gridx,gridy);
+                }
+            }
+        }
+    }
+
+    //写数字
+    for(int i=0;i<9;i++)
+    {
+        for(int j=0;j<9;j++)
+        {
+            if(issus[i][j]!=0)
+            {
+                number=issus[i][j]+48;
+                p.setFont(QFont("systom", 12, 12));
+                p.drawText(QPoint((j+1)*gridx+5*gridx/12,(i+1)*gridy+3*gridy/4),number);
+            }
+        }
+    }
+    for(int i=1;i<=9;i++)
+    {
+        number=i+48;
+        p.setFont(QFont("systom", 12, 12));
+        p.drawText(QPoint(11*gridx+5*gridx/12,i*gridy+3*gridy/4),number);
+    }
+
+    QString str;
+    str.sprintf("%d",sec);
+    time.setText(str);
+}
+
+
+void grid::mousePressEvent(QMouseEvent *ev)
+{
+    //获取鼠标位置数字
+    int ex=ev->x();
+    int ey=ev->y();
+    int eex=ex/gridx;
+    int eey=ey/gridy;
+
+    //选中区域外不执行
+    if(eex<1||eey<1)
+        return;
+    if(eex>11||eey>9||eex==10)
+        return;
+
+    int positionj=eex-1;
+    int positioni=eey-1;
+
+    //删除
+    if(ev->button()==Qt::RightButton)
+    {
+        if(blank[positioni][positionj]==0)
+        {
+            issus[positioni][positionj]=0;
+        }
+
+        logol=0;
+        searchnum=0;
+        update();
+        return;
+    }
+
+    //选中侧边数字
+    if(eex==11)
+    {
+        logol=eey;
+        searchnum=eey;
+        if(lastnum==0&&open==1)
+        {
+            qDebug()<<"logol"<<logol;
+            issus[lasti][lastj]=logol;
+            open=0;
+
+        }
+    }
+
+    //选中数独表
+    else
+    {
+        if(blank[positioni][positionj]==1)
+        {
+            open=0;
+            searchnum=issus[positioni][positionj];
+            logol=issus[positioni][positionj];
+            qDebug()<<searchnum<<issus[positioni][positionj];
+
+            update();
+            return;
+        }
+        else
+        {
+            lastnum=logol;
+            lasti=positioni;
+            lastj=positionj;
+            open=1;
+        }
+        if(ev->button()==Qt::RightButton)
+        {
+            issus[positioni][positionj]=0;
+            logol=0;
+            searchnum=0;
+        }
+        else
+        {
+            issus[positioni][positionj]=logol;
+        }
+
+    }
+    qDebug()<<111111<<lastnum<<lasti<<lastj<<logol;
+    update();
+
+}
+
+
+void grid::timerEvent(QTimerEvent *event)
+{
+    sec++;
+    update();
+}
+
+
+grid::grid(QWidget *parent) : QWidget(parent)
+{
+    createshudu1();
+    resize(650,550);
+    hint.setParent(this);
+    hint.setText("hint");
+    hint.resize(50,30);
+    hint.move(0,10);
+
+    restart.setParent(this);
+    restart.setText("restart");
+    restart.resize(50,30);
+    restart.move(0,10);
+
+    time.setParent(this);
+    time.resize(50,50);
+    time.move(0,490);
+
+    another.setParent(this);
+    another.setText("another");
+    another.resize(50,50);
+    another.move(0,60);
+
+    this->startTimer(1000);
+    connect(&hint,&QPushButton::clicked,this,&grid::hintnum);
+    connect(&restart,&QPushButton::clicked,this,&grid::restartshudu);
+    connect(&another,&QPushButton::clicked,this,&grid::anothershudu);
+}
+\
+
+void grid::hintnum()
+{
+    //最多提示5次
+    if(count==0)
+    {
+        return;
+    }
+
+    QTime time= QTime::currentTime();
+    qsrand(time.msec()+time.second()*1000);
+    int i=0,j=0,k=0;
+    for(;k==0;)
+    {
+        i=qrand()%9;
+        j=qrand()%9;
+        if(issus[i][j]==0)
+        {
+            issus[i][j]=array[i][j];
+            blank[i][j]=1;
+            k=1;
+            count-=1;
+        }
+    }
+
+    update();
+}
+
+
+void grid::restartshudu()
+{
+    for(int i=0;i<9;i++)
+    {
+        for(int j=0;j<9;j++)
+        {
+            if(blank[i][j]==1)
+            {
+                issus[i][j]=array[i][j];
+            }
+            else
+            {
+                issus[i][j]=0;
+            }
+        }
+    }
+
+    update();
+}
+
+
+void grid::anothershudu()
+{
+    for(int i=0;i<9;i++)
+    {
+        for(int j=0;j<9;j++)
+        {
+            array[i][j]=0;
+            issus[i][j]=0;
+            blank[i][j]=0;
+        }
+    }
+    createshudu1();
+    sec=0;
+    update();
+}
